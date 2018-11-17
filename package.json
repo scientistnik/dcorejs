@@ -1,0 +1,35 @@
+{
+  "name": "dcorelib",
+  "version": "0.1.0",
+  "description": "javascript lib for decent blockchain",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon --exec 'npm' run build --watch src",
+    "build": "babel src -d dist",
+    "clr": "rm -rf dist"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/scientistnik/dcorejs.git"
+  },
+  "author": "scientistnik <nozdrin.plotnitsky@gmail.com> (https://github.com/scientistnik)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/scientistnik/dcorejs/issues"
+  },
+  "homepage": "https://github.com/scientistnik/dcorejs#readme",
+  "dependencies": {
+    "@babel/runtime": "^7.1.5",
+    "bignumber.js": "^8.0.1",
+    "dcorejs-lib": "^1.5.1",
+    "lzma": "^2.3.2"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.1.2",
+    "@babel/core": "^7.1.2",
+    "@babel/plugin-proposal-class-properties": "^7.1.0",
+    "@babel/plugin-transform-runtime": "^7.1.0",
+    "@babel/preset-env": "^7.1.0",
+    "nodemon": "^1.17.5"
+  }
+}
