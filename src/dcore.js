@@ -137,36 +137,6 @@ class DCore {
     return account
   }
 
-  static ticker(baseSymbol, quoteSymbol) {
-    return DCore.db.get_ticker(baseSymbol.toUpperCase(), quoteSymbol.toUpperCase())
-  }
-
-  static async tradeHistory(quoteSymbol, baseSymbol, startDate, stopDate, bucketSeconds) {
-    return DCore.history.get_market_history(
-      (await DCore.assets[quoteSymbol]).id,
-      (await DCore.assets[baseSymbol]).id,
-      bucketSeconds,
-      startDate.toISOString().slice(0, -5),
-      stopDate.toISOString().slice(0, -5)
-    )
-  }
-
-  static async getLimitOrders(quoteSymbol, baseSymbol, limit = 50) {
-    return DCore.db.get_limit_orders(
-      (await DCore.assets[quoteSymbol]).id,
-      (await DCore.assets[baseSymbol]).id,
-      limit > 100 ? 100 : limit
-    )
-  }
-
-  static async getOrderBook(quoteSymbol, baseSymbol, limit = 50) {
-    return DCore.db.get_order_book(
-      (await DCore.assets[quoteSymbol]).id,
-      (await DCore.assets[baseSymbol]).id,
-      limit > 50 ? 50 : limit
-    )
-  }
-
   constructor(accountName, activeKey, feeSymbol = DCore.chain.core_asset) {
     if (activeKey)
       this.activeKey = PrivateKey.fromWif(activeKey);
@@ -211,95 +181,9 @@ class DCore {
     return Promise.all(balances.map(balance => DCore.assets.fromParam(balance)))
   }
 
-  buyOperation = async (buySymbol, baseSymbol, amount, price, fill_or_kill = false, expire = "2020-02-02T02:02:02") => {
-    await this.initPromise;
-
-    let buyAsset = await DCore.assets[buySymbol],
-        baseAsset = await DCore.assets[baseSymbol],
-        buyAmount = Math.floor(amount * 10 ** buyAsset.precision),
-        sellAmount = Math.floor(BigNumber(amount).times(price * 10 ** baseAsset.precision).toString());
-
-    if (buyAmount == 0 || sellAmount == 0)
-      throw new Error("Amount equal 0!")
-
-    let params = {
-      fee: this.feeAsset.toParam(),
-      seller: this.account.id,
-      amount_to_sell: baseAsset.toParam(sellAmount),
-      min_to_receive: buyAsset.toParam(buyAmount),
-      expiration: expire,
-      fill_or_kill: fill_or_kill,
-      extensions: []
-    }
-
-    return { limit_order_create: params }
-  }
-
-  buy = async (...args) => {
-    let tx = await this.sendOperation(
-      await this.buyOperation(...args)
-    )
-    return (await DCore.db.get_objects([tx[0].trx.operation_results[0][1]]))[0];
-  }
-
-  sellOperation = async (sellSymbol, baseSymbol, amount, price, fill_or_kill = false, expire = "2020-02-02T02:02:02") => {
-    await this.initPromise;
-
-    let sellAsset = await DCore.assets[sellSymbol],
-        baseAsset = await DCore.assets[baseSymbol],
-        sellAmount = Math.floor(amount * 10 ** sellAsset.precision),
-        buyAmount = Math.floor(BigNumber(amount).times(price * 10 ** baseAsset.precision).toString());
-
-    if (buyAmount == 0 || sellAmount == 0)
-      throw new Error("Amount equal 0!")
-
-    let params = {
-      fee: this.feeAsset.toParam(),
-      seller: this.account.id,
-      amount_to_sell: sellAsset.toParam(sellAmount),
-      min_to_receive: baseAsset.toParam(buyAmount),
-      expiration: expire,
-      fill_or_kill: fill_or_kill,
-      extensions: []
-    }
-  
-    return {limit_order_create: params }
-  }
-
-  sell = async (...args) => {
-    let tx = await this.sendOperation(
-      await this.sellOperation(...args)
-    )
-    return (await DCore.db.get_objects([tx[0].trx.operation_results[0][1]]))[0];
-  }
-
   orders = async () => {
     await this.initPromise;
     return (await DCore.db.get_full_accounts([this.account.id],false))[0][1].limit_orders
-  }
-
-  getOrder = async id => {
-    await this.initPromise;
-    return (await DCore.db.get_objects([id]))[0];
-  }
-
-  cancelOrderOperation = async id => {
-    await this.initPromise;
-
-    let params = {
-      fee: this.feeAsset.toParam(),
-      fee_paying_account: this.account.id,
-      order: id,
-      extensions: []
-    }
-
-    return { limit_order_cancel: params }
-  }
-
-  cancelOrder = async (...args) => {
-    return this.sendOperation(
-      await this.cancelOrderOperation(...args)
-    )
   }
 
   memo = async (toName, message) => {

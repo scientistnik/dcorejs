@@ -1,7 +1,10 @@
 {
   "name": "dcorelib",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "javascript lib for decent blockchain",
+  "bin": {
+    "dcore": "./cli.js"
+  },
   "main": "index.js",
   "scripts": {
     "dev": "nodemon --exec 'npm' run build --watch src",
